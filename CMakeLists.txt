@@ -9,11 +9,23 @@ if (WIN32)
   )
 endif ()
 
-
-add_executable(smbios
-  main.cpp
+add_library(smbios
   src/smbios.cpp
   src/smbios.hpp
   src/bios_streambuf.cpp
   src/bios_streambuf.hpp
+)
+
+add_executable(smbiosexe
+  main.cpp
+)
+
+target_link_libraries(smbiosexe PRIVATE smbios)
+
+install(TARGETS smbios)
+
+install(FILES
+  src/smbios.hpp
+  src/bios_streambuf.hpp
+  DESTINATION include
 )
