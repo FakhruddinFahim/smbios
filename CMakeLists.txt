@@ -22,7 +22,7 @@ add_executable(smbiosexe
 
 target_link_libraries(smbiosexe PRIVATE smbios)
 
-install(TARGETS smbios)
+install(TARGETS smbiosexe smbios)
 
 install(FILES
   src/smbios.hpp
