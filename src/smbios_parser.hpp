@@ -15,7 +15,6 @@ struct smbios_parser {
   uint32_t version = 0;
   smbios_entry_point* entry_point = nullptr;
   std::vector<smbios*> structures;
-  std::vector<uint8_t> buffer;
 
   smbios_parser() = default;
 
@@ -27,9 +26,7 @@ struct smbios_parser {
 
   smbios_parser& operator=(smbios_parser&& other) noexcept;
 
-  static smbios_parser parse();
-
-  void parse(std::vector<uint8_t>& buffer);
+  void parse();
 
   template<typename T> requires std::is_base_of_v<smbios, T>
   T* find() {

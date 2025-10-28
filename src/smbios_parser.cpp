@@ -5,12 +5,16 @@
 #include "smbios_parser.hpp"
 #include <iomanip>
 #include <sstream>
+#include <filesystem>
+#include <fstream>
+#ifdef WIN32
 #include <windows.h>
+#endif
 
-smbios_parser::smbios_parser(smbios_parser&& other) noexcept : version(other.version),
-                                                               entry_point(other.entry_point),
-                                                               structures(std::move(other.structures)),
-                                                               buffer(std::move(other.buffer)) {
+smbios_parser::smbios_parser(smbios_parser&& other) noexcept :
+  version(other.version),
+  entry_point(other.entry_point),
+  structures(std::move(other.structures)) {
 }
 
 smbios_parser& smbios_parser::operator=(smbios_parser&& other) noexcept {
@@ -18,11 +22,9 @@ smbios_parser& smbios_parser::operator=(smbios_parser&& other) noexcept {
     version = other.version;
     entry_point = other.entry_point;
     structures = std::move(other.structures);
-    buffer = std::move(other.buffer);
     other.version = 0;
     other.entry_point = nullptr;
     other.structures.clear();
-    other.buffer.clear();
   }
   return *this;
 }
@@ -36,35 +38,16 @@ constexpr uint32_t make_fourcc(std::string_view s) {
            : 0;
 }
 
-smbios_parser smbios_parser::parse() {
+void smbios_parser::parse() {
   std::vector<uint8_t> buffer;
+
 #ifdef WIN32
   uint32_t size = GetSystemFirmwareTable(make_fourcc("RSMB"), 0, nullptr, 0);
   buffer.resize(size, 0);
   GetSystemFirmwareTable(make_fourcc("RSMB"), 0, buffer.data(), size);
-#else
-  std::error_code ec;
-  auto size = std::filesystem::file_size("/sys/firmware/dmi/tables/DMI", ec);
-  std::fstream file("/sys/firmware/dmi/tables/DMI", std::ios_base::in | std::ios_base::binary);
-  if (file.is_open()) {
-    buffer.resize(size);
-    file.read(reinterpret_cast<char*>(buffer.data()), static_cast<std::streamsize>(buffer.size()));
-    file.close();
-  } else {
-    std::print(std::cerr, "error reading file\n");
-  }
-#endif
 
-  smbios_parser parser{};
-  parser.parse(buffer);
-  return parser;
-}
-
-
-void smbios_parser::parse(std::vector<uint8_t>& buf) {
-  this->buffer = buf;
   bios_streambuf istream(buffer.data(), buffer.data() + buffer.size());
-#ifdef WIN32
+
   auto entry_point64 = new smbios_entry_point64{};
   entry_point = entry_point64;
   istream.sbumpc();
@@ -74,11 +57,11 @@ void smbios_parser::parse(std::vector<uint8_t>& buf) {
   entry_point64->structure_table_max_size = istream.read_uint32();
   version = entry_point64->smbios_major_version << 8 | entry_point64->smbios_minor_version;
 #else
-  auto size = std::filesystem::file_size("/sys/firmware/dmi/tables/smbios_entry_point");
-  std::ifstream file("/sys/firmware/dmi/tables/smbios_entry_point", std::ios_base::binary);
-  if (file) {
+  std::ifstream entry_file("/sys/firmware/dmi/tables/smbios_entry_point", std::ios_base::binary);
+  if (entry_file) {
+    auto size = std::filesystem::file_size("/sys/firmware/dmi/tables/smbios_entry_point");
     std::vector<uint8_t> entry_buf(size);
-    file.read(reinterpret_cast<char*>(entry_buf.data()), static_cast<std::streamsize>(size));
+    entry_file.read(reinterpret_cast<char*>(entry_buf.data()), static_cast<std::streamsize>(size));
     if (std::string(entry_buf.data(), entry_buf.data() + 4) == "_SM_") {
       bios_streambuf streambuf(entry_buf.data(), entry_buf.data() + entry_buf.size());
       auto entry_point32 = new smbios_entry_point32{};
@@ -92,10 +75,22 @@ void smbios_parser::parse(std::vector<uint8_t>& buf) {
       entry_point = entry_point64;
       version = entry_point64->smbios_major_version << 8 | entry_point64->smbios_minor_version;
     }
+    entry_file.close();
   } else {
-    throw std::runtime_error("can not read smbios_entry_point");
+    throw std::runtime_error("can not open /sys/firmware/dmi/tables/smbios_entry_point");
   }
 
+  std::fstream file("/sys/firmware/dmi/tables/DMI", std::ios_base::in | std::ios_base::binary);
+  if (file) {
+    auto size = std::filesystem::file_size("/sys/firmware/dmi/tables/DMI");
+    buffer.resize(size);
+    file.read(reinterpret_cast<char*>(buffer.data()), static_cast<std::streamsize>(buffer.size()));
+    file.close();
+  } else {
+    throw std::runtime_error("can not open /sys/firmware/dmi/tables/DMI\n");
+  }
+
+  bios_streambuf istream(buffer.data(), buffer.data() + buffer.size());
 #endif
 
   if (version > static_cast<int32_t>(smbios_version::smbios_3_5)) {

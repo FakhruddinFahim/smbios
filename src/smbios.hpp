@@ -248,7 +248,7 @@ struct bios_info : smbios {
   uint16_t bios_starting_addr_seg{};
   std::string bios_release_date{};
   uint8_t bios_rom_size{}; //kb = (bios_rom_size + 1) * 64k
-  bios_characteristics bios_characteristics{};
+  enum bios_characteristics bios_characteristics{};
   //version 2.4+
   bios_char_ext_byte1 bios_characteristics_ext_byte1;
   bios_char_ext_byte2 bios_characteristics_ext_byte2;
@@ -257,7 +257,7 @@ struct bios_info : smbios {
   uint8_t embedded_controller_firmware_major_release{};
   uint8_t embedded_controller_firmware_minor_release{};
   //version 3.1+
-  extended_bios_rom_size extended_bios_rom_size{};
+  enum extended_bios_rom_size extended_bios_rom_size{};
 
   void read_params(bios_streambuf& istream, smbios_parser* parser) override;
 
@@ -297,7 +297,7 @@ struct system_info : smbios {
   std::string serial_number;
   //version 2.1+
   uint8_t uuid[16]{};
-  wake_up_type wake_up_type{};
+  enum wake_up_type wake_up_type{};
   //version 2.4+
   std::string sku_number;
   std::string family;
@@ -346,7 +346,7 @@ struct baseboard_info : smbios {
   feature_flag feature_flags{};
   std::string location_in_chassis;
   uint16_t chassis_handle{};
-  board_type board_type{};
+  enum board_type board_type{};
   uint8_t num_of_contained_object_handles{};
   std::vector<uint16_t> contained_object_handles;
 
@@ -699,8 +699,8 @@ struct processor_info : smbios {
   static constexpr auto TYPE = smbios_type::processor_information;
   //2.0+
   std::string socket_designation;
-  processor_type processor_type{};
-  processor_family processor_family{};
+  enum processor_type processor_type{};
+  enum processor_family processor_family{};
   std::string processor_manufacturer;
   uint64_t processor_id{};
   std::string processor_version;
@@ -709,7 +709,7 @@ struct processor_info : smbios {
   uint16_t max_speed{};
   uint16_t current_speed{};
   cpu_status status{};
-  processor_upgrade processor_upgrade{};
+  enum processor_upgrade processor_upgrade{};
   //2.1+
   uint16_t l1_cache_handle{};
   uint16_t l2_cache_handle{};
@@ -722,7 +722,7 @@ struct processor_info : smbios {
   uint8_t core_count{};
   uint8_t core_enabled{};
   uint8_t thread_count{};
-  processor_characteristics processor_characteristics{};
+  enum processor_characteristics processor_characteristics{};
   //2.6+
   enum processor_family processor_family_2{};
   //3.0+
@@ -857,16 +857,16 @@ struct cache_info : smbios {
   static constexpr auto TYPE = smbios_type::cache_information;
   //2.0+
   std::string socket_designation;
-  cache_configuration cache_configuration{};
+  struct cache_configuration cache_configuration{};
   cache_size max_cache_size{};
   cache_size installed_size{};
   sram_type supported_sram_type{};
   sram_type current_sram_type{};
   //2.1+
   uint8_t cache_speed{};
-  error_correction_type error_correction_type{};
-  system_cache_type system_cache_type{};
-  associativity associativity{};
+  enum error_correction_type error_correction_type{};
+  enum system_cache_type system_cache_type{};
+  enum associativity associativity{};
   //3.1+
   cache_size2 max_cache_size2{};
   cache_size2 installed_cache_size2{};
@@ -971,7 +971,7 @@ struct port_connector_info : smbios {
   connector_type internal_connector_type{};
   std::string external_ref_designator;
   connector_type external_connector_type{};
-  port_type port_type{};
+  enum port_type port_type{};
 
   void read_params(bios_streambuf& istream, smbios_parser* smbios) override;
 };
@@ -1294,8 +1294,8 @@ struct memory_device : smbios {
   uint16_t max_voltage{};
   uint16_t configured_voltage{};
   //3.2+
-  memory_technology memory_technology{};
-  memory_operating_mode_capability memory_operating_mode_capability{};
+  enum memory_technology memory_technology{};
+  enum memory_operating_mode_capability memory_operating_mode_capability{};
   std::string firmware_version;
   uint16_t module_manufacturer_id{};
   uint16_t module_product_id{};
@@ -1524,9 +1524,9 @@ struct system_slots : smbios {
   system_slot_current_usage current_usage{};
   system_slot_length slot_length{};
   uint16_t slot_id{};
-  slot_characteristics1 slot_characteristics1{};
+  enum slot_characteristics1 slot_characteristics1{};
   //2.1+
-  slot_characteristics2 slot_characteristics2{};
+  enum slot_characteristics2 slot_characteristics2{};
   //2.6+
   uint16_t segment_group_number{};
   uint8_t bus_number{};
