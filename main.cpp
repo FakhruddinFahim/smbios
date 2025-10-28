@@ -1,9 +1,11 @@
 #include <iostream>
-#include "src/smbios.hpp"
+#include "src/smbios_parser.hpp"
 
 int main() {
-  auto ctx = parse_smbios();
-  for (const auto& structure: ctx.structures) {
+  auto parser = smbios_parser::parse();
+  [[maybe_unused]] auto info = parser.find<bios_info>();
+  std::cout << info->vendor << '\n';
+  for (const auto& structure: parser.structures) {
     if (auto unknown = dynamic_cast<unknown_struct*>(structure)) {
       std::cout << "unknown type, strings:\n";
       for (const auto& str: unknown->to_strings()) {

@@ -11,7 +11,6 @@
 #include <vector>
 
 class bios_streambuf : public std::streambuf {
-private:
   int offset = 0;
   size_t header_start_pos = 0;
 public:
@@ -21,9 +20,9 @@ public:
   pos_type
   seekoff(std::basic_streambuf<char>::off_type off, std::ios_base::seekdir dir, std::ios_base::openmode) override;
 
-  std::size_t pos();
+  [[nodiscard]] std::size_t pos() const;
 
-  std::size_t size();
+  [[nodiscard]] std::size_t size() const;
 
   void header_start();
 

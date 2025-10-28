@@ -22,11 +22,11 @@ bios_streambuf::seekoff(std::basic_streambuf<char>::off_type off, std::ios_base:
 }
 
 
-std::size_t bios_streambuf::pos() {
+std::size_t bios_streambuf::pos() const {
   return gptr() - eback();
 }
 
-std::size_t bios_streambuf::size() {
+std::size_t bios_streambuf::size() const {
   return egptr() - eback();
 }
 
@@ -42,7 +42,7 @@ std::string bios_streambuf::read_string(int header_len) {
   while (index--) {
     std::getline(std::istream(this), str, '\0');
   }
-  pubseekoff((int32_t) position, std::ios_base::beg);
+  pubseekoff(static_cast<int32_t>(position), std::ios_base::beg);
   offset += str.empty() ? 0 : str.size() + 1;
   return str;
 }
@@ -54,7 +54,7 @@ std::vector<std::string> bios_streambuf::read_strings(int header_len) {
     return ret;
   }
   auto position = pos();
-  pubseekoff((int32_t) header_start_pos + header_len, std::ios_base::beg);
+  pubseekoff(static_cast<int32_t>(header_start_pos) + header_len, std::ios_base::beg);
   std::string str;
   while (index--) {
     std::getline(std::istream(this), str, '\0');
