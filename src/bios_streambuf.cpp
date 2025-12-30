@@ -4,6 +4,7 @@
 
 #include "bios_streambuf.hpp"
 #include <istream>
+#include <string>
 
 bios_streambuf::bios_streambuf(uint8_t* beg, uint8_t* end) {
   setg(reinterpret_cast<char*>(beg), reinterpret_cast<char*>(beg), reinterpret_cast<char*>(end));

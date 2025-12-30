@@ -5,7 +5,6 @@
 #include "smbios.hpp"
 #include <cstring>
 #include <format>
-#include <iostream>
 #include <iomanip>
 
 #include "smbios_parser.hpp"
@@ -13,6 +12,7 @@
 #ifdef WIN32
 
 #include <windows.h>
+#undef min
 
 #else
 #include <filesystem>
