@@ -1,3 +1,9 @@
 @PACKAGE_INIT@
 
-include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@_targets.cmake")
+set(EXPORT_NAME @PROJECT_NAME@_targets)
+
+if (SMBIOS_USE_STATIC_LIBS)
+  include("${CMAKE_CURRENT_LIST_DIR}/${EXPORT_NAME}-static.cmake")
+else()
+  include("${CMAKE_CURRENT_LIST_DIR}/${EXPORT_NAME}.cmake")
+endif()

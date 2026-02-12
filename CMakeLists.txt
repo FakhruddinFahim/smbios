@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.28)
-project(smbios VERSION 2025.09.04)
+project(smbios VERSION 2026.02.12)
 
 if (NOT DEFINED CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 23)
 endif ()
+
+set(DEBUG_POSTFIX d CACHE STRING "Debug library postfix.")
 
 add_library(smbios
   src/smbios.cpp
@@ -14,7 +16,7 @@ add_library(smbios
   src/smbios_parser.hpp
 )
 
-add_executable(smbiosexe
+add_executable(smbios_exe
   main.cpp
 )
 
@@ -24,13 +26,26 @@ if (WIN32)
   )
 endif ()
 
-target_link_libraries(smbiosexe PRIVATE smbios)
+target_link_libraries(smbios_exe PRIVATE smbios)
 
-install(TARGETS smbios
-  EXPORT ${PROJECT_NAME}_targets
+set_target_properties(smbios PROPERTIES
+  DEBUG_POSTFIX ${DEBUG_POSTFIX}
 )
 
-install(TARGETS smbiosexe)
+set_target_properties(smbios_exe PROPERTIES
+  OUTPUT_NAME ${PROJECT_NAME}
+)
+
+set(EXPORT_NAME ${PROJECT_NAME}_targets)
+if (NOT BUILD_SHARED_LIBS)
+  string(APPEND EXPORT_NAME "-static")
+endif ()
+
+install(TARGETS smbios
+  EXPORT ${EXPORT_NAME}
+)
+
+install(TARGETS smbios_exe)
 
 install(FILES
   src/smbios_parser.hpp
@@ -39,7 +54,7 @@ install(FILES
   DESTINATION include
 )
 
-install(EXPORT ${PROJECT_NAME}_targets
+install(EXPORT ${EXPORT_NAME}
   NAMESPACE ${PROJECT_NAME}::
   DESTINATION lib/cmake/${PROJECT_NAME}
 )
