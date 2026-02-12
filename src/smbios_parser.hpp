@@ -29,7 +29,7 @@ struct smbios_parser {
   void parse();
 
   template<typename T> requires std::is_base_of_v<smbios, T>
-  T* find() {
+  const T* find() {
     for (smbios* smbios : structures) {
       if (auto a = dynamic_cast<T*>(smbios)) {
         return a;
